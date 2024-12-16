@@ -12,16 +12,23 @@ import {
 import { OutlinedInput } from "@mui/material";
 import axios from "axios";
 
-import { useState, useRef, useEffect } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  ChangeEvent,
+  FormEvent,
+  MouseEvent,
+} from "react";
 
 const Calculator = () => {
-  const [operation, setOperation] = useState("");
-  const [result, setResult] = useState("");
-  const firstRef = useRef(null);
-  const secondRef = useRef(null);
+  const [operation, setOperation] = useState<string>("");
+  const [result, setResult] = useState<string>("");
+  const firstRef = useRef<HTMLInputElement>(null);
+  const secondRef = useRef<HTMLInputElement>(null);
   const welcomeMessage = "Calculator is ready!";
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setOperation(e.target.value);
   };
 
@@ -29,12 +36,12 @@ const Calculator = () => {
     setResult(welcomeMessage);
   }, []);
 
-  const handleCalculate = (e) => {
+  const handleCalculate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const query = {
       operation: operation,
-      first: firstRef.current.value,
-      second: secondRef.current.value,
+      first: firstRef.current!.value,
+      second: secondRef.current!.value,
     };
 
     axios
@@ -43,17 +50,21 @@ const Calculator = () => {
         setResult(res.data.result);
       })
       .catch((err) => {
-        console.log(err.response.data.message);
+        setResult(err.response.data.message);
       });
   };
 
-  const handleReset = (e) => {
+  const handleReset = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setOperation("");
     setResult(welcomeMessage);
-    firstRef.current.value = null;
-    secondRef.current.value = null;
-    document.querySelector("#operation").selectedIndex = 0;
+    firstRef.current!.value = "";
+    secondRef.current!.value = "";
+    const operationSelectIndex =
+      document.querySelector<HTMLSelectElement>("#operation");
+    if (operationSelectIndex) {
+      operationSelectIndex.selectedIndex = 0;
+    }
   };
 
   return (
@@ -78,8 +89,7 @@ const Calculator = () => {
                 name: "operation",
                 id: "operation",
               }}
-              onChange={handleChange}
-            >
+              onChange={handleChange}>
               <option value="">Op</option>
               <option value={"add"}>+</option>
               <option value={"subtract"}>-</option>
@@ -107,7 +117,7 @@ const Calculator = () => {
         </Grid2>
         <Grid2 xs={2}>
           <FormControl fullWidth>
-            <Button variant="outlines" onClick={handleReset}>
+            <Button variant="outlined" onClick={handleReset}>
               Reset
             </Button>
           </FormControl>
@@ -129,31 +139,3 @@ const Calculator = () => {
   );
 };
 export default Calculator;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

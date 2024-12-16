@@ -1,6 +1,7 @@
 import { add, subtract, multiply, divide } from "../../../utils/calculate";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default function handler(req, res) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== "GET") {
       throw new Error(
@@ -9,7 +10,7 @@ export default function handler(req, res) {
     }
 
     const params = extractParams(req.query.params);
-    let result;
+    let result: number;
     switch (params.operation) {
       case "add":
         result = add(params.first, params.second);
@@ -27,13 +28,23 @@ export default function handler(req, res) {
         throw new Error(`Unsupported operation ${params.operation}`);
     }
     res.status(200).json({ result });
-  } catch (e) {
+  } catch (e: any) {
     res.status(500).json({ message: e.message });
   }
 }
 
-function extractParams(queryParams) {
-  if (queryParams.length !== 3) {
+interface Params {
+  operation: string;
+  first: number;
+  second: number;
+}
+
+function extractParams(queryParams: string | string[] | undefined): Params {
+  if (!queryParams) {
+    throw new Error(`Please provide Query params. Received ${queryParams}`);
+  }
+
+  if (Array.isArray(queryParams) && queryParams.length !== 3) {
     throw new Error(
       `Query params should have 3 items. Received ${queryParams.length}: ${queryParams}`
     );
@@ -45,9 +56,17 @@ function extractParams(queryParams) {
       first: parseInt(queryParams[1]),
       second: parseInt(queryParams[2]),
     };
+
+    if (isNaN(params.first) || isNaN(params.second)) {
+      throw new Error(`First number and Second number must be numbers`);
+    }
+
     return params;
-  } catch (e) {
-    throw new Error(`Failed to process query params. Received: ${queryParams}`);
+  } catch (e: any) {
+    let errMessage = `Failed to process query params. Received: ${queryParams}`;
+    if (e instanceof Error) {
+      errMessage = e.message;
+    }
+    throw new Error(errMessage);
   }
 }
-
